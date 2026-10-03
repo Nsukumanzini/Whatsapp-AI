@@ -1,0 +1,6 @@
+{
+  "name": "OG Technologies - WhatsApp AI Agent & Lead Hub",
+  "description": "Production-ready automated WhatsApp AI customer support agent and lead qualification system for OG Technologies, powered by Firebase Cloud Functions and Gemini 2.5 Flash.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

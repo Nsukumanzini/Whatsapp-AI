@@ -1,0 +1,672 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OG Technologies - WhatsApp AI Leads & Conversation Hub</title>
+  <!-- Tailwind CSS CDN for single-file deployment -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#eefdf5',
+              100: '#d7fae5',
+              500: '#10b981',
+              600: '#059669',
+              700: '#047857',
+              800: '#065f46',
+              900: '#064e3b',
+              accent: '#25D366' // WhatsApp Green
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <!-- Phosphor / Lucide Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    /* Custom scrollbar */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: #f1f5f9; }
+    ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 9999px; }
+    ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen font-sans antialiased flex flex-col">
+
+  <!-- TOP HEADER -->
+  <header class="bg-white border-b border-slate-200 sticky top-0 z-30 shadow-xs">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+      <div class="flex items-center space-x-3">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-emerald-600 to-teal-500 flex items-center justify-center text-white shadow-md shadow-emerald-500/20">
+          <i class="fa-brands fa-whatsapp text-2xl"></i>
+        </div>
+        <div>
+          <div class="flex items-center space-x-2">
+            <h1 class="font-bold text-lg text-slate-900 tracking-tight">OG Technologies</h1>
+            <span class="px-2 py-0.5 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-800 border border-emerald-200">AI Agent Live</span>
+          </div>
+          <p class="text-xs text-slate-500">Automated WhatsApp Support & Lead Qualification • <a href="https://ogtechnologies.co.za" target="_blank" class="hover:text-emerald-600 underline">ogtechnologies.co.za</a></p>
+        </div>
+      </div>
+
+      <div class="flex items-center space-x-3">
+        <!-- Firebase Connection Status Badge -->
+        <div id="connectionStatus" class="flex items-center space-x-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-emerald-50 text-emerald-700 border border-emerald-200">
+          <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+          <span id="connectionText">Real-Time Cloud Synced</span>
+        </div>
+
+        <button onclick="toggleConfigModal()" class="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-xs font-medium transition flex items-center space-x-1.5">
+          <i class="fa-solid fa-sliders"></i>
+          <span>Firebase Setup</span>
+        </button>
+
+        <button onclick="exportLeadsCSV()" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-medium shadow-xs transition flex items-center space-x-1.5">
+          <i class="fa-solid fa-download"></i>
+          <span>Export CSV</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- MAIN BODY -->
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex-1 w-full space-y-6">
+
+    <!-- METRICS CARDS -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs flex items-center justify-between">
+        <div>
+          <p class="text-xs font-medium text-slate-500 uppercase tracking-wider">Total Leads</p>
+          <h3 id="statTotalLeads" class="text-2xl font-bold text-slate-900 mt-1">0</h3>
+          <p class="text-xs text-emerald-600 mt-1"><i class="fa-solid fa-arrow-trend-up mr-1"></i>Captured from WhatsApp</p>
+        </div>
+        <div class="w-12 h-12 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center text-lg">
+          <i class="fa-solid fa-user-plus"></i>
+        </div>
+      </div>
+
+      <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs flex items-center justify-between">
+        <div>
+          <p class="text-xs font-medium text-slate-500 uppercase tracking-wider">New Quotes Needed</p>
+          <h3 id="statNewLeads" class="text-2xl font-bold text-amber-600 mt-1">0</h3>
+          <p class="text-xs text-slate-500 mt-1">Awaiting sales follow-up</p>
+        </div>
+        <div class="w-12 h-12 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center text-lg">
+          <i class="fa-solid fa-clock-rotate-left"></i>
+        </div>
+      </div>
+
+      <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs flex items-center justify-between">
+        <div>
+          <p class="text-xs font-medium text-slate-500 uppercase tracking-wider">Active Conversations</p>
+          <h3 id="statTotalChats" class="text-2xl font-bold text-slate-900 mt-1">0</h3>
+          <p class="text-xs text-slate-500 mt-1">With 10-turn memory</p>
+        </div>
+        <div class="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-lg">
+          <i class="fa-brands fa-whatsapp"></i>
+        </div>
+      </div>
+
+      <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs flex items-center justify-between">
+        <div>
+          <p class="text-xs font-medium text-slate-500 uppercase tracking-wider">Human Handoffs</p>
+          <h3 id="statHandoffs" class="text-2xl font-bold text-rose-600 mt-1">0</h3>
+          <p class="text-xs text-rose-600 mt-1">Urgent or complex cases</p>
+        </div>
+        <div class="w-12 h-12 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center text-lg">
+          <i class="fa-solid fa-headset"></i>
+        </div>
+      </div>
+    </div>
+
+    <!-- MAIN TWO-COLUMN WORKSPACE: LEADS TABLE & LIVE THREAD VIEWER -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+      
+      <!-- LEFT: LEADS LIST (7 Cols) -->
+      <div class="lg:col-span-7 bg-white rounded-2xl border border-slate-200/80 shadow-xs overflow-hidden flex flex-col">
+        <div class="p-4 border-b border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-slate-50/50">
+          <div>
+            <h2 class="font-bold text-slate-900 text-base">Qualified WhatsApp Leads</h2>
+            <p class="text-xs text-slate-500">Auto-extracted by Gemini 2.5 Flash from inquiries</p>
+          </div>
+          
+          <div class="flex items-center space-x-2">
+            <div class="relative">
+              <i class="fa-solid fa-search absolute left-3 top-2.5 text-slate-400 text-xs"></i>
+              <input type="text" id="leadSearchInput" oninput="renderLeads()" placeholder="Search name, phone, service..." class="pl-8 pr-3 py-1.5 text-xs bg-white border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 w-48">
+            </div>
+            
+            <select id="leadFilterService" onchange="renderLeads()" class="py-1.5 px-2.5 text-xs bg-white border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500">
+              <option value="ALL">All Services</option>
+              <option value="CCTV Installation">CCTV Installation</option>
+              <option value="IT Support">IT Support SLA</option>
+              <option value="Web Development">Web Development</option>
+              <option value="Mobile App Development">Mobile App</option>
+              <option value="Cloud/Domain Hosting">Hosting / Email</option>
+              <option value="Digital Marketing">Digital Marketing</option>
+              <option value="UI/UX Design">UI/UX Design</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- LEADS TABLE -->
+        <div class="overflow-x-auto min-h-[360px] max-h-[560px]">
+          <table class="w-full text-left border-collapse text-xs">
+            <thead>
+              <tr class="bg-slate-100/70 text-slate-500 font-semibold border-b border-slate-200">
+                <th class="py-3 px-4">Contact</th>
+                <th class="py-3 px-4">Service Needed</th>
+                <th class="py-3 px-4">Location</th>
+                <th class="py-3 px-4">Urgency</th>
+                <th class="py-3 px-4">Status</th>
+                <th class="py-3 px-4 text-right">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="leadsTableBody" class="divide-y divide-slate-100">
+              <!-- Dynamically populated -->
+            </tbody>
+          </table>
+          <div id="noLeadsMessage" class="hidden py-16 text-center text-slate-400">
+            <i class="fa-regular fa-folder-open text-3xl mb-2"></i>
+            <p>No leads found matching your filters.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- RIGHT: LIVE WHATSAPP THREAD INSPECTOR (5 Cols) -->
+      <div class="lg:col-span-5 bg-white rounded-2xl border border-slate-200/80 shadow-xs overflow-hidden flex flex-col h-[630px]">
+        <!-- Thread Header -->
+        <div class="p-4 bg-slate-900 text-white flex items-center justify-between">
+          <div class="flex items-center space-x-3">
+            <div class="w-10 h-10 rounded-full bg-emerald-500 flex items-center justify-center text-white font-bold text-sm shadow-xs">
+              <i class="fa-solid fa-user"></i>
+            </div>
+            <div>
+              <h3 id="activeChatName" class="font-semibold text-sm">Select a Conversation</h3>
+              <p id="activeChatPhone" class="text-xs text-slate-400">Click a lead or chat to inspect</p>
+            </div>
+          </div>
+          <div id="activeChatBadge" class="hidden">
+            <span class="px-2 py-0.5 rounded-full text-xs font-semibold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+              Active WhatsApp
+            </span>
+          </div>
+        </div>
+
+        <!-- Chat Bubble Container -->
+        <div id="chatMessagesContainer" class="flex-1 p-4 overflow-y-auto space-y-3 bg-[#e5ddd5]/30">
+          <div class="text-center py-24 text-slate-400">
+            <div class="w-12 h-12 mx-auto rounded-full bg-slate-100 flex items-center justify-center text-slate-400 mb-3">
+              <i class="fa-brands fa-whatsapp text-2xl"></i>
+            </div>
+            <p class="text-xs">Select any lead from the left to view the complete multi-turn conversation between the customer and OG Technologies AI.</p>
+          </div>
+        </div>
+
+        <!-- Human Agent Takeover Box -->
+        <div class="p-3 bg-white border-t border-slate-200">
+          <form id="humanReplyForm" onsubmit="sendHumanReply(event)" class="space-y-2">
+            <div class="flex items-center justify-between text-xs text-slate-500">
+              <span class="font-medium"><i class="fa-solid fa-user-shield text-emerald-600 mr-1"></i>Human Agent Takeover</span>
+              <span class="text-[11px] text-slate-400">Sends directly via WhatsApp API</span>
+            </div>
+            <div class="flex items-center space-x-2">
+              <input type="text" id="humanReplyInput" placeholder="Type a message to take over from AI..." class="flex-1 px-3 py-2 text-xs border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500">
+              <button type="submit" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-medium transition shadow-xs flex items-center space-x-1">
+                <i class="fa-solid fa-paper-plane"></i>
+                <span>Send</span>
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- SERVICES & AGENT CAPABILITIES REFERENCE -->
+    <div class="bg-white rounded-2xl border border-slate-200/80 p-5 shadow-xs">
+      <h3 class="font-bold text-slate-900 text-sm mb-3">OG Technologies Knowledge Base Grounding</h3>
+      <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-3 text-xs">
+        <div class="p-3 rounded-xl bg-slate-50 border border-slate-200">
+          <div class="font-semibold text-slate-900 mb-1 flex items-center space-x-1">
+            <i class="fa-solid fa-network-wired text-blue-500"></i>
+            <span>IT Support</span>
+          </div>
+          <p class="text-slate-500">SLA, Ubiquiti Wi-Fi, Server admin, Helpdesk</p>
+        </div>
+        <div class="p-3 rounded-xl bg-slate-50 border border-slate-200">
+          <div class="font-semibold text-slate-900 mb-1 flex items-center space-x-1">
+            <i class="fa-solid fa-video text-amber-500"></i>
+            <span>CCTV Security</span>
+          </div>
+          <p class="text-slate-500">Hikvision, Dahua, Remote Mobile, Biometrics</p>
+        </div>
+        <div class="p-3 rounded-xl bg-slate-50 border border-slate-200">
+          <div class="font-semibold text-slate-900 mb-1 flex items-center space-x-1">
+            <i class="fa-solid fa-code text-emerald-500"></i>
+            <span>Web Dev</span>
+          </div>
+          <p class="text-slate-500">React, Next.js, E-Commerce, WordPress, SEO</p>
+        </div>
+        <div class="p-3 rounded-xl bg-slate-50 border border-slate-200">
+          <div class="font-semibold text-slate-900 mb-1 flex items-center space-x-1">
+            <i class="fa-solid fa-mobile-screen text-purple-500"></i>
+            <span>Mobile Apps</span>
+          </div>
+          <p class="text-slate-500">Flutter, React Native, iOS & Android</p>
+        </div>
+        <div class="p-3 rounded-xl bg-slate-50 border border-slate-200">
+          <div class="font-semibold text-slate-900 mb-1 flex items-center space-x-1">
+            <i class="fa-solid fa-palette text-pink-500"></i>
+            <span>UI/UX Design</span>
+          </div>
+          <p class="text-slate-500">Figma, Prototyping, Brand Design Systems</p>
+        </div>
+        <div class="p-3 rounded-xl bg-slate-50 border border-slate-200">
+          <div class="font-semibold text-slate-900 mb-1 flex items-center space-x-1">
+            <i class="fa-solid fa-bullhorn text-orange-500"></i>
+            <span>Marketing</span>
+          </div>
+          <p class="text-slate-500">Google Ads, Meta Ads, SEO, Lead Gen</p>
+        </div>
+        <div class="p-3 rounded-xl bg-slate-50 border border-slate-200">
+          <div class="font-semibold text-slate-900 mb-1 flex items-center space-x-1">
+            <i class="fa-solid fa-server text-cyan-500"></i>
+            <span>Cloud & Domains</span>
+          </div>
+          <p class="text-slate-500">cPanel, Workspace, .co.za, VPS, SSL</p>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="bg-white border-t border-slate-200 py-4 text-center text-xs text-slate-500">
+    <p>© 2025 Optimal Growth Technologies SA (OG Technologies). All rights reserved. • WhatsApp Cloud API v20.0 • Google Gemini 2.5 Flash</p>
+  </footer>
+
+  <!-- CONFIGURATION MODAL -->
+  <div id="configModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-xs z-50 hidden items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-lg w-full p-6 shadow-xl border border-slate-200 space-y-4">
+      <div class="flex items-center justify-between">
+        <h3 class="font-bold text-slate-900 text-base">Firebase Client Configuration</h3>
+        <button onclick="toggleConfigModal()" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-lg"></i></button>
+      </div>
+      <p class="text-xs text-slate-500">Paste your Firebase web project configuration object below to sync live Firestore data in your browser, or continue using the active workspace state.</p>
+      
+      <div class="space-y-3">
+        <div>
+          <label class="block text-xs font-medium text-slate-700 mb-1">Firebase Project ID</label>
+          <input type="text" id="cfgProjectId" placeholder="e.g. og-technologies-whatsapp" class="w-full px-3 py-2 text-xs border border-slate-200 rounded-lg">
+        </div>
+        <div>
+          <label class="block text-xs font-medium text-slate-700 mb-1">API Key</label>
+          <input type="text" id="cfgApiKey" placeholder="AIzaSy..." class="w-full px-3 py-2 text-xs border border-slate-200 rounded-lg">
+        </div>
+      </div>
+
+      <div class="flex justify-end space-x-2 pt-2">
+        <button onclick="toggleConfigModal()" class="px-3 py-2 text-xs text-slate-600 hover:bg-slate-100 rounded-lg">Cancel</button>
+        <button onclick="saveFirebaseConfig()" class="px-4 py-2 text-xs bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg font-medium">Save & Reconnect</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- FIREBASE SCRIPTS (v10 modular / compat) -->
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+
+  <script>
+    // State
+    let leads = [];
+    let chats = {};
+    let selectedPhone = null;
+    let firestoreDb = null;
+
+    // Seed mock data for preview if Firebase not yet linked
+    const INITIAL_DEMO_LEADS = [
+      {
+        phone: "+27821234567",
+        name: "Sipho Dlamini",
+        email: "sipho@dlamini-logistics.co.za",
+        service: "CCTV Installation",
+        location: "Sandton, Johannesburg",
+        urgency: "High",
+        summary: "Needs 8-camera Hikvision IP system with remote phone viewing for warehouse",
+        humanHandoff: false,
+        status: "NEW",
+        updatedAt: new Date(Date.now() - 1000 * 60 * 15)
+      },
+      {
+        phone: "+27719876543",
+        name: "Annatjie van der Merwe",
+        email: "annatjie@pretoriaboutique.co.za",
+        service: "Web Development",
+        location: "Pretoria East",
+        urgency: "Medium",
+        summary: "Looking to build an online e-commerce boutique store with PayFast payment integration",
+        humanHandoff: false,
+        status: "QUALIFIED",
+        updatedAt: new Date(Date.now() - 1000 * 60 * 60 * 2)
+      },
+      {
+        phone: "+27834567890",
+        name: "Dr. Thabo Khumalo",
+        email: "info@khumalomedical.co.za",
+        service: "IT Support",
+        location: "Rosebank, JHB",
+        urgency: "High",
+        summary: "Urgent SLA needed: 15 workstations network offline, Wi-Fi router dropouts",
+        humanHandoff: true,
+        status: "NEW",
+        updatedAt: new Date(Date.now() - 1000 * 60 * 45)
+      },
+      {
+        phone: "+27601239874",
+        name: "Craig Peterson",
+        email: "craig@fitmotion.app",
+        service: "Mobile App Development",
+        location: "Cape Town / Remote",
+        urgency: "Low",
+        summary: "Inquiring about cross-platform Flutter fitness tracking app MVP",
+        humanHandoff: false,
+        status: "CONTACTED",
+        updatedAt: new Date(Date.now() - 1000 * 60 * 60 * 5)
+      }
+    ];
+
+    const INITIAL_DEMO_CHATS = {
+      "+27821234567": [
+        { role: "user", content: "Good day, do you guys install CCTV cameras for businesses in Sandton?", timestamp: "10:15 AM" },
+        { role: "assistant", content: "Hello Sipho! Thank you for reaching out to *OG Technologies*. Yes, absolutely! We specialize in high-definition IP CCTV installations across Sandton and Greater Johannesburg, complete with crystal-clear night vision and smartphone remote live viewing.", timestamp: "10:15 AM" },
+        { role: "user", content: "Great! How many cameras do you recommend for a 400sqm warehouse, and what's the turnaround time?", timestamp: "10:18 AM" },
+        { role: "assistant", content: "For a 400sqm warehouse, an 8-camera NVR setup (covering entry gates, dispatch bays, and main floor) is standard. We typically complete site assessment and installation within 48 to 72 hours. What is your email address so our technical director can send through an official specification and quote?", timestamp: "10:19 AM" },
+        { role: "user", content: "My name is Sipho Dlamini, email is sipho@dlamini-logistics.co.za.", timestamp: "10:21 AM" },
+        { role: "assistant", content: "Excellent, thank you Mr. Dlamini! I have logged your request (*8-Camera CCTV Warehouse Quote - Sandton*) for our engineering team. We will email the itemized proposal shortly. Can we also assist with biometric access control or network cabling while on site?", timestamp: "10:22 AM" }
+      ],
+      "+27834567890": [
+        { role: "user", content: "Emergency! Our medical practice network has been dropping all morning and we can't access patient files.", timestamp: "11:30 AM" },
+        { role: "assistant", content: "Good day Dr. Khumalo! We understand the critical urgency for your medical practice. I am immediately flagging this for an emergency priority technician handoff. Can you confirm if your main fibre router lights are blinking red or green?", timestamp: "11:30 AM" },
+        { role: "user", content: "The router is green but the internal switches are clicking. Please have someone call me ASAP at this number.", timestamp: "11:32 AM" },
+        { role: "assistant", content: "Understood! An OG Technologies senior network technician has been alerted with top priority and will phone you directly within the next 10 minutes.", timestamp: "11:33 AM" }
+      ]
+    };
+
+    // Initialize Dashboard
+    function initDashboard() {
+      // Check localStorage for saved Firebase configuration
+      const savedConfig = localStorage.getItem("og_tech_firebase_config");
+      if (savedConfig) {
+        try {
+          const config = JSON.parse(savedConfig);
+          if (config.projectId) {
+            firebase.initializeApp(config);
+            firestoreDb = firebase.firestore();
+            document.getElementById("connectionText").innerText = "Connected to " + config.projectId;
+            listenToFirestore();
+            return;
+          }
+        } catch (e) {
+          console.error("Firebase config load error", e);
+        }
+      }
+
+      // Fallback to local / preview state
+      leads = [...INITIAL_DEMO_LEADS];
+      chats = { ...INITIAL_DEMO_CHATS };
+      updateStats();
+      renderLeads();
+      if (leads.length > 0) {
+        selectChat(leads[0].phone);
+      }
+    }
+
+    function listenToFirestore() {
+      if (!firestoreDb) return;
+
+      // Realtime listener for leads
+      firestoreDb.collection("leads").orderBy("createdAt", "desc").onSnapshot((snapshot) => {
+        const loadedLeads = [];
+        snapshot.forEach((doc) => {
+          loadedLeads.push({ id: doc.id, ...doc.data() });
+        });
+        if (loadedLeads.length > 0) {
+          leads = loadedLeads;
+          updateStats();
+          renderLeads();
+        }
+      }, (err) => {
+        console.warn("Firestore leads listener warning:", err);
+      });
+    }
+
+    function updateStats() {
+      document.getElementById("statTotalLeads").innerText = leads.length;
+      document.getElementById("statNewLeads").innerText = leads.filter(l => l.status === "NEW").length;
+      document.getElementById("statTotalChats").innerText = Object.keys(chats).length || leads.length;
+      document.getElementById("statHandoffs").innerText = leads.filter(l => l.humanHandoff).length;
+    }
+
+    function renderLeads() {
+      const search = (document.getElementById("leadSearchInput").value || "").toLowerCase();
+      const serviceFilter = document.getElementById("leadFilterService").value;
+
+      const filtered = leads.filter(lead => {
+        const matchSearch = (lead.name || "").toLowerCase().includes(search) ||
+                            (lead.phone || "").toLowerCase().includes(search) ||
+                            (lead.service || "").toLowerCase().includes(search) ||
+                            (lead.summary || "").toLowerCase().includes(search);
+        const matchService = serviceFilter === "ALL" || lead.service.toLowerCase().includes(serviceFilter.toLowerCase());
+        return matchSearch && matchService;
+      });
+
+      const tbody = document.getElementById("leadsTableBody");
+      const noMsg = document.getElementById("noLeadsMessage");
+
+      if (filtered.length === 0) {
+        tbody.innerHTML = "";
+        noMsg.classList.remove("hidden");
+        return;
+      }
+
+      noMsg.classList.add("hidden");
+      tbody.innerHTML = filtered.map(lead => {
+        const isSelected = selectedPhone === lead.phone;
+        const urgencyColor = lead.urgency === "High" ? "bg-rose-100 text-rose-700 border-rose-200" :
+                             lead.urgency === "Medium" ? "bg-amber-100 text-amber-700 border-amber-200" :
+                             "bg-slate-100 text-slate-600 border-slate-200";
+
+        const statusColor = lead.status === "NEW" ? "bg-blue-100 text-blue-800" :
+                            lead.status === "QUALIFIED" ? "bg-emerald-100 text-emerald-800" :
+                            lead.status === "CONTACTED" ? "bg-purple-100 text-purple-800" :
+                            "bg-slate-100 text-slate-700";
+
+        return `
+          <tr onclick="selectChat('${lead.phone}')" class="cursor-pointer hover:bg-slate-50 transition ${isSelected ? 'bg-emerald-50/60' : ''}">
+            <td class="py-3 px-4">
+              <div class="font-bold text-slate-900">${escapeHtml(lead.name || 'Anonymous')}</div>
+              <div class="text-[11px] text-slate-500 flex items-center space-x-1">
+                <i class="fa-brands fa-whatsapp text-emerald-600"></i>
+                <span>${escapeHtml(lead.phone)}</span>
+              </div>
+              ${lead.email ? `<div class="text-[11px] text-slate-400 truncate max-w-[140px]">${escapeHtml(lead.email)}</div>` : ''}
+            </td>
+            <td class="py-3 px-4">
+              <span class="font-medium text-slate-800">${escapeHtml(lead.service)}</span>
+              <p class="text-[10px] text-slate-400 line-clamp-1 max-w-[160px]">${escapeHtml(lead.summary || '')}</p>
+            </td>
+            <td class="py-3 px-4 text-slate-600">
+              <div class="flex items-center space-x-1">
+                <i class="fa-solid fa-location-dot text-slate-400"></i>
+                <span>${escapeHtml(lead.location || 'Gauteng')}</span>
+              </div>
+            </td>
+            <td class="py-3 px-4">
+              <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold border ${urgencyColor}">${lead.urgency || 'Normal'}</span>
+            </td>
+            <td class="py-3 px-4">
+              <select onclick="event.stopPropagation()" onchange="changeLeadStatus('${lead.phone}', this.value)" class="text-[11px] font-semibold rounded-md px-2 py-0.5 ${statusColor} border border-transparent focus:outline-none">
+                <option value="NEW" ${lead.status === 'NEW' ? 'selected' : ''}>NEW</option>
+                <option value="CONTACTED" ${lead.status === 'CONTACTED' ? 'selected' : ''}>CONTACTED</option>
+                <option value="QUALIFIED" ${lead.status === 'QUALIFIED' ? 'selected' : ''}>QUALIFIED</option>
+                <option value="CLOSED" ${lead.status === 'CLOSED' ? 'selected' : ''}>CLOSED</option>
+              </select>
+            </td>
+            <td class="py-3 px-4 text-right">
+              <a href="https://wa.me/${lead.phone.replace(/[^0-9]/g, '')}" target="_blank" onclick="event.stopPropagation()" class="inline-flex items-center justify-center w-7 h-7 rounded-lg bg-emerald-100 text-emerald-700 hover:bg-emerald-200 transition" title="Open in WhatsApp Web">
+                <i class="fa-brands fa-whatsapp text-sm"></i>
+              </a>
+            </td>
+          </tr>
+        `;
+      }).join("");
+    }
+
+    function selectChat(phone) {
+      selectedPhone = phone;
+      renderLeads();
+
+      const lead = leads.find(l => l.phone === phone);
+      document.getElementById("activeChatName").innerText = lead ? lead.name : "WhatsApp User";
+      document.getElementById("activeChatPhone").innerText = phone;
+      document.getElementById("activeChatBadge").classList.remove("hidden");
+
+      // Load messages from firestore or demo
+      if (firestoreDb) {
+        firestoreDb.collection("chats").doc(phone).collection("messages").orderBy("timestamp", "asc").limitToLast(20).onSnapshot(snap => {
+          const msgs = [];
+          snap.forEach(d => msgs.push(d.data()));
+          renderChatMessages(msgs);
+        });
+      } else {
+        const msgs = chats[phone] || [
+          { role: "user", content: lead ? lead.summary : "Hello, I need assistance.", timestamp: "Just now" },
+          { role: "assistant", content: "Good day! Welcome to OG Technologies. How can we support your technology infrastructure today?", timestamp: "Just now" }
+        ];
+        renderChatMessages(msgs);
+      }
+    }
+
+    function renderChatMessages(messages) {
+      const container = document.getElementById("chatMessagesContainer");
+      if (!messages || messages.length === 0) {
+        container.innerHTML = '<div class="py-12 text-center text-slate-400 text-xs">No message history recorded yet for this number.</div>';
+        return;
+      }
+
+      container.innerHTML = messages.map(msg => {
+        const isUser = msg.role === "user";
+        return `
+          <div class="flex flex-col ${isUser ? 'items-start' : 'items-end'}">
+            <div class="max-w-[85%] rounded-2xl px-3.5 py-2.5 shadow-xs text-xs ${
+              isUser
+                ? 'bg-white text-slate-800 rounded-tl-xs border border-slate-200/60'
+                : 'bg-[#dcf8c6] text-slate-900 rounded-tr-xs border border-emerald-200/50'
+            }">
+              <div class="text-[10px] font-bold mb-1 ${isUser ? 'text-slate-500' : 'text-emerald-800'}">
+                ${isUser ? '<i class="fa-solid fa-user mr-1"></i>Customer' : '<i class="fa-solid fa-robot mr-1"></i>OG Technologies AI'}
+              </div>
+              <p class="whitespace-pre-wrap leading-relaxed">${escapeHtml(msg.content)}</p>
+              <div class="text-[9px] text-right mt-1 text-slate-400 flex items-center justify-end space-x-1">
+                <span>${msg.timestamp ? (typeof msg.timestamp === 'string' ? msg.timestamp : new Date(msg.timestamp.toDate ? msg.timestamp.toDate() : msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })) : 'Live'}</span>
+                ${!isUser ? '<i class="fa-solid fa-check-double text-blue-500 text-[10px]"></i>' : ''}
+              </div>
+            </div>
+          </div>
+        `;
+      }).join("");
+
+      container.scrollTop = container.scrollHeight;
+    }
+
+    function sendHumanReply(e) {
+      e.preventDefault();
+      const input = document.getElementById("humanReplyInput");
+      const text = input.value.trim();
+      if (!text || !selectedPhone) return;
+
+      const newMsg = {
+        role: "assistant",
+        content: `[Human Specialist]: ${text}`,
+        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+      };
+
+      if (!chats[selectedPhone]) chats[selectedPhone] = [];
+      chats[selectedPhone].push(newMsg);
+
+      if (firestoreDb) {
+        firestoreDb.collection("chats").doc(selectedPhone).collection("messages").add({
+          role: "assistant",
+          content: newMsg.content,
+          timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+          isHumanTakeover: true
+        });
+      }
+
+      renderChatMessages(chats[selectedPhone]);
+      input.value = "";
+    }
+
+    function changeLeadStatus(phone, newStatus) {
+      const lead = leads.find(l => l.phone === phone);
+      if (lead) {
+        lead.status = newStatus;
+        if (firestoreDb) {
+          firestoreDb.collection("leads").doc(phone).update({ status: newStatus });
+        }
+        updateStats();
+        renderLeads();
+      }
+    }
+
+    function exportLeadsCSV() {
+      if (leads.length === 0) return alert("No leads to export.");
+      let csv = "Name,Phone,Email,Service Needed,Location,Urgency,Status,Summary\n";
+      leads.forEach(l => {
+        csv += `"${(l.name||'').replace(/"/g, '""')}","${l.phone||''}","${l.email||''}","${l.service||''}","${l.location||''}","${l.urgency||''}","${l.status||''}","${(l.summary||'').replace(/"/g, '""')}"\n`;
+      });
+      const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `og_technologies_leads_${new Date().toISOString().slice(0, 10)}.csv`;
+      a.click();
+    }
+
+    function toggleConfigModal() {
+      const modal = document.getElementById("configModal");
+      modal.classList.toggle("hidden");
+      modal.classList.toggle("flex");
+    }
+
+    function saveFirebaseConfig() {
+      const projectId = document.getElementById("cfgProjectId").value.trim();
+      const apiKey = document.getElementById("cfgApiKey").value.trim();
+      if (!projectId) return alert("Please enter your Firebase Project ID");
+
+      const config = { projectId, apiKey };
+      localStorage.setItem("og_tech_firebase_config", JSON.stringify(config));
+      toggleConfigModal();
+      location.reload();
+    }
+
+    function escapeHtml(text) {
+      if (!text) return "";
+      return text
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    }
+
+    window.onload = initDashboard;
+  </script>
+</body>
+</html>
